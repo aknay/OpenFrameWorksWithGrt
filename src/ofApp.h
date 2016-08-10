@@ -52,5 +52,11 @@ public:
 private:
     ofxUDPManager mUdpConnection;
     static const uint PORT_NUMBER = 11999;
-    static const uint BUFFER_SIZE = 1000;
+    static const uint BUFFER_SIZE = 128;
+    enum class Position{
+        FIRST_NUMBER,
+        SECOND_NUMBER
+    };
+
+    int _getNumberAt(const Position position, const std::string udpMessage);
 };

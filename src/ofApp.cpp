@@ -120,18 +120,22 @@ void ofApp::setup(){
 void ofApp::update(){
 
     //get Udp Message
-    char udpMesssage[BUFFER_SIZE];
-    mUdpConnection.Receive(udpMesssage, BUFFER_SIZE);
-    string message = udpMesssage;
+    char bufferMessage[BUFFER_SIZE];
+    mUdpConnection.Receive(bufferMessage, BUFFER_SIZE);
+    const string udpMessage = bufferMessage;
 
-    if (message.size() > 0) {
-    ofLog(OF_LOG_NOTICE, "the arrived message is " + message);
-    }
+    if (udpMessage.size() == 0) return;
 
-    //Grab the current mouse x and y position
+    ofLog(OF_LOG_NOTICE, "the arrived message is " + udpMessage);
+
+    if (udpMessage.at(0) != '<' || udpMessage.at(udpMessage.size()-1) != '>') return;
+
     VectorDouble sample(2);
-    sample[0] = mouseX;
-    sample[1] = mouseY;
+    sample[0] =  _getNumberAt(Position::FIRST_NUMBER, udpMessage);
+    sample[1] =  _getNumberAt(Position::SECOND_NUMBER, udpMessage);
+
+    std::cout <<  "firstNumber string is "<< sample[0] << std::endl;
+    std::cout <<  "secondNumber string is "<< sample[1] << std::endl;
 
     //If we are recording training data, then add the current sample to the training data set
     if( record ){
@@ -459,6 +463,30 @@ void ofApp::windowResized(int w, int h){
 //--------------------------------------------------------------
 void ofApp::gotMessage(ofMessage msg){
 
+}
+
+int ofApp::_getNumberAt(const Position position, const string udpMessage)
+{
+    //data format is <19,43>
+
+    const std::string delimiter = ",";
+
+    //remove first and last char
+    auto temp = udpMessage.substr(1, udpMessage.size()-2);
+    auto pos = temp.find(delimiter);
+
+    switch (position) {
+
+    case Position::FIRST_NUMBER: return std::atoi(temp.substr(0, pos).c_str());
+
+    case Position::SECOND_NUMBER: return std::atoi(temp.substr(pos + delimiter.length(), temp.size()).c_str());
+
+    default:
+        assert(false);
+        break;
+    }
+
+    return 0;
 }
 
 //--------------------------------------------------------------
