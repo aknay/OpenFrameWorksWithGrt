@@ -4,7 +4,11 @@
 
 #pragma once
 
+#include <assert.h>
+
 #include "ofMain.h"
+#include "ofxNetwork.h"
+
 #include "ofxGrt/src/ofxGrt.h"
 
 //State that we want to use the GRT namespace
@@ -44,4 +48,9 @@ public:
     ofxGrtTimeseriesPlot classLikelihoodsPlot;
     Vector< std::shared_ptr< ofxGrtTimeseriesPlot > > trainingDataPlot;
     Vector< ofxGrtMatrixPlot > distanceMatrixPlots;
+
+private:
+    ofxUDPManager mUdpConnection;
+    static const uint PORT_NUMBER = 11999;
+    static const uint BUFFER_SIZE = 1000;
 };

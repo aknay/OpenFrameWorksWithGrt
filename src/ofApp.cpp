@@ -67,6 +67,16 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 
+    //Setup Udp Manager
+    auto isUdpCreated = mUdpConnection.Create();
+    assert(isUdpCreated == true);
+
+    auto isBindingSuccessful = mUdpConnection.Bind(PORT_NUMBER);
+    assert(isBindingSuccessful == true);
+
+    auto isSettingOfNonBlockingSuccessful = mUdpConnection.SetNonBlocking(true);
+    assert(isSettingOfNonBlockingSuccessful == true);
+
     ofSetFrameRate( FRAME_RATE );
 
     //Load the resources
@@ -108,6 +118,15 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
+
+    //get Udp Message
+    char udpMesssage[BUFFER_SIZE];
+    mUdpConnection.Receive(udpMesssage, BUFFER_SIZE);
+    string message = udpMesssage;
+
+    if (message.size() > 0) {
+    ofLog(OF_LOG_NOTICE, "the arrived message is " + message);
+    }
 
     //Grab the current mouse x and y position
     VectorDouble sample(2);
@@ -247,93 +266,93 @@ void ofApp::keyPressed(int key){
     infoText = "";
 
     switch ( key) {
-        case 'r':
-            record = !record;
-            if( !record ){
-                trainingData.addSample(trainingClassLabel, timeseries);
+    case 'r':
+        record = !record;
+        if( !record ){
+            trainingData.addSample(trainingClassLabel, timeseries);
 
-                //Update the training data plot
-                labelName = string("Class: ") + grt_to_str<unsigned int>( trainingClassLabel );
-                trainingDataPlot.push_back( std::make_shared<ofxGrtTimeseriesPlot>() );
-                trainingDataPlot.back()->setup( timeseries.getNumRows(), timeseries.getNumCols(), labelName );
-                trainingDataPlot.back()->setFont( font );
-                trainingDataPlot.back()->setData( timeseries );
+            //Update the training data plot
+            labelName = string("Class: ") + grt_to_str<unsigned int>( trainingClassLabel );
+            trainingDataPlot.push_back( std::make_shared<ofxGrtTimeseriesPlot>() );
+            trainingDataPlot.back()->setup( timeseries.getNumRows(), timeseries.getNumCols(), labelName );
+            trainingDataPlot.back()->setFont( font );
+            trainingDataPlot.back()->setData( timeseries );
 
-                //Clear the timeseries for the next recording
-                timeseries.clear();
-            }
-            break;
-        case '[':
-            if( trainingClassLabel > 1 )
-                trainingClassLabel--;
-            break;
-        case ']':
-            trainingClassLabel++;
-            break;
-        case '1':
-            trainingClassLabel = 1;
+            //Clear the timeseries for the next recording
+            timeseries.clear();
+        }
         break;
-        case '2':
-            trainingClassLabel = 2;
+    case '[':
+        if( trainingClassLabel > 1 )
+            trainingClassLabel--;
         break;
-        case '3':
-            trainingClassLabel = 3;
+    case ']':
+        trainingClassLabel++;
         break;
-        case '4':
-            trainingClassLabel = 4;
+    case '1':
+        trainingClassLabel = 1;
         break;
-        case '5':
-            trainingClassLabel = 4;
+    case '2':
+        trainingClassLabel = 2;
         break;
-        case '6':
-            trainingClassLabel = 6;
+    case '3':
+        trainingClassLabel = 3;
         break;
-        case '7':
-            trainingClassLabel = 7;
+    case '4':
+        trainingClassLabel = 4;
         break;
-        case '8':
-            trainingClassLabel = 8;
+    case '5':
+        trainingClassLabel = 4;
         break;
-        case '9':
-            trainingClassLabel = 9;
+    case '6':
+        trainingClassLabel = 6;
         break;
-        case '0':
-            trainingClassLabel = 0;
+    case '7':
+        trainingClassLabel = 7;
         break;
-        case 't':
-            if( pipeline.train( trainingData ) ){
-                infoText = "Pipeline Trained";
+    case '8':
+        trainingClassLabel = 8;
+        break;
+    case '9':
+        trainingClassLabel = 9;
+        break;
+    case '0':
+        trainingClassLabel = 0;
+        break;
+    case 't':
+        if( pipeline.train( trainingData ) ){
+            infoText = "Pipeline Trained";
 
-                //Setup the distance matrix
-                distanceMatrixPlots.resize( pipeline.getNumClasses() );
+            //Setup the distance matrix
+            distanceMatrixPlots.resize( pipeline.getNumClasses() );
 
-                //Setup the plots for prediction
-                predictedClassPlot.setup( FRAME_RATE * 5, 1, "predicted label" );
-                predictedClassPlot.setFont( font );
-                predictedClassPlot.setRanges( 0, pipeline.getNumClasses() );
-                classLikelihoodsPlot.setup( FRAME_RATE * 5, pipeline.getNumClasses(), "class likelihoods" );
-                classLikelihoodsPlot.setFont( font );
-                classLikelihoodsPlot.setRanges( 0, 1 );
+            //Setup the plots for prediction
+            predictedClassPlot.setup( FRAME_RATE * 5, 1, "predicted label" );
+            predictedClassPlot.setFont( font );
+            predictedClassPlot.setRanges( 0, pipeline.getNumClasses() );
+            classLikelihoodsPlot.setup( FRAME_RATE * 5, pipeline.getNumClasses(), "class likelihoods" );
+            classLikelihoodsPlot.setFont( font );
+            classLikelihoodsPlot.setRanges( 0, 1 );
 
 
-            }else infoText = "WARNING: Failed to train pipeline";
-            break;
-        case 's':
-            if( trainingData.saveDatasetToFile("TrainingData.txt") ){
-                infoText = "Training data saved to file";
-            }else infoText = "WARNING: Failed to save training data to file";
-            break;
-        case 'l':
-            if( trainingData.loadDatasetFromFile("TrainingData.txt") ){
-                infoText = "Training data saved to file";
-            }else infoText = "WARNING: Failed to load training data from file";
-            break;
-        case 'c':
-            trainingData.clear();
-            infoText = "Training data cleared";
-            break;
-        default:
-            break;
+        }else infoText = "WARNING: Failed to train pipeline";
+        break;
+    case 's':
+        if( trainingData.saveDatasetToFile("TrainingData.txt") ){
+            infoText = "Training data saved to file";
+        }else infoText = "WARNING: Failed to save training data to file";
+        break;
+    case 'l':
+        if( trainingData.loadDatasetFromFile("TrainingData.txt") ){
+            infoText = "Training data saved to file";
+        }else infoText = "WARNING: Failed to load training data from file";
+        break;
+    case 'c':
+        trainingData.clear();
+        infoText = "Training data cleared";
+        break;
+    default:
+        break;
     }
 
 }
@@ -389,7 +408,7 @@ void ofApp::drawDistanceMatrix(){
     float y = 10 + bounds.height;
     font.drawString( "Distance Matrix", x, y );
 
-     //Draw the DTW cost matrix for each class
+    //Draw the DTW cost matrix for each class
     const Vector< MatrixFloat > &distanceMatrix = dtw->getDistanceMatrices();
 
     if( distanceMatrixPlots.getSize() != distanceMatrix.getSize() ){

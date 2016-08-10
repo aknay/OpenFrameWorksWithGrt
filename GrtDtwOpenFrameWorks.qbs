@@ -148,7 +148,7 @@ Project{
         ]
 
         of.addons: [
-
+            'ofxNetwork'
         ]
 
         // additional flags for the project. the of module sets some

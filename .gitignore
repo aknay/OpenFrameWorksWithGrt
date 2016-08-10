@@ -176,3 +176,9 @@ Makefile*
 # QtCtreator CMake
 CMakeLists.txt.user*
 
+#########################
+# This is from me .gitignore
+#########################
+
+#ignore bin folder 
+/bin/*
